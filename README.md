@@ -5,11 +5,11 @@ A line chart and a radial heatmap are drawn, rendering the same set of data. Whe
 
 **Demo**: http://pbeshai.github.io/linked-highlighting-react-vega-redux/
 
-![Charts with no highlighting](img/chart.png)
+<img src='img/chart.png' width='400' />
 
 *Charts with no highlighting*
 
-![Charts with linked highlighting on mouse over](img/chart_highlight.png)
+<img src='img/chart_highlight.png' width='400' />
 
 *Charts with linked highlighting on mouse over*
 
