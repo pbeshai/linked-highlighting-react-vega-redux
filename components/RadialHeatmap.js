@@ -129,6 +129,7 @@ class RadialHeatmap extends Component {
         {
           'type': 'symbol',
           'from': {'data': 'highlightedPoint'},
+          'interactive': false,
           'properties': {
             'enter': {
               'x': {'value': width / 2},
