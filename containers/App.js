@@ -14,6 +14,8 @@ class App extends Component {
 
   componentWillMount() {
     const { actions } = this.props;
+
+    // initialize the chart data to some random numbers
     actions.setChartData(this._generateData());
   }
 
@@ -26,6 +28,7 @@ class App extends Component {
     return data;
   }
 
+  // handler to change the chart data to a new set of random numbers
   _handleNewDataClick() {
     const { actions } = this.props;
     actions.setChartData(this._generateData());
@@ -50,6 +53,7 @@ App.propTypes = {
   actions: PropTypes.object.isRequired
 };
 
+// take the subset of relevant state (in this case, everything) to be used in this component
 function mapStateToProps(state) {
   return {
     chartData: state.chartApp.chartData,
@@ -57,6 +61,7 @@ function mapStateToProps(state) {
   };
 }
 
+// helper to bind dispatch to the actions to simplify calling them
 function mapDispatchToProps(dispatch) {
   return {
     actions: bindActionCreators(ChartAppActions, dispatch)

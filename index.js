@@ -7,7 +7,7 @@ import configureStore from './store/configureStore';
 
 const store = configureStore();
 
-// Every time the state changes, log it
+// Every time the state changes, log it, helpful for getting the hang of Redux
 // let unsubscribe = store.subscribe(() =>
 //   console.log('[Store]', store.getState())
 // );

@@ -9,43 +9,58 @@ class LineChart extends Component {
       vis: null
     };
 
+    // use PureRenderMixin to limit updates when they are not necessary
     this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
 
     this._handleMouseMove = this._handleMouseMove.bind(this);
   }
 
+  // On initial load, generate the initial vis and attach signal listeners
   componentDidMount() {
     const { data, highlightedPoint } = this.props;
     const spec = this._spec();
 
+    // parse the vega spec and create the vis
     vg.parse.spec(spec, chart => {
-      let vis = chart({ el: this.refs.chartContainer })
+      const vis = chart({ el: this.refs.chartContainer })
         .onSignal('mouse', (_, mouse) => this._handleMouseMove(mouse));
 
+      // set the initial data
       vis.data('points').insert(data);
+
+      // set the initial highlighted point if available
       if (highlightedPoint) {
         vis.data('highlightedPoint').insert([highlightedPoint]);
       }
+
+      // render the vis
       vis.update();
 
+      // store the vis object in state to be used on later updates
       this.setState({ vis });
     });
   }
 
+  // updates mean that either the data or the highlightedPoint changed
   componentDidUpdate() {
     const { vis } = this.state;
     const { data, highlightedPoint } = this.props;
 
     if (vis) {
+      // update data in case it changed
       vis.data('points').remove(() => true).insert(data);
+
+      // update the highlighted point in case it changed
       vis.data('highlightedPoint').remove(() => true);
       if (highlightedPoint) {
         vis.data('highlightedPoint').insert([highlightedPoint]);
       }
+
       vis.update();
     }
   }
 
+  // dummy render method that creates the container vega draws inside
   render() {
     return (
       <div ref='chartContainer'></div>
@@ -53,6 +68,7 @@ class LineChart extends Component {
   }
 
   /**
+   * handler called on mouse signal change
    * x = domain x
    * y = domain y
    */
@@ -64,6 +80,7 @@ class LineChart extends Component {
       return;
     }
 
+    // if no x or no y, remove the highlight, otherwise highlight the closest point
     if (x == null || y == null) {
       onHighlight(null);
     } else {
@@ -88,6 +105,7 @@ class LineChart extends Component {
     return closest;
   }
 
+  // the vega spec for the chart
   _spec() {
     return {
       'width': 400,

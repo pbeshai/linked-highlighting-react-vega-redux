@@ -5,6 +5,7 @@ const initialState = {
   highlightedPoint: null
 };
 
+// update application state based on action type and parameters
 export default function chartAppReducer(state = initialState, action) {
   switch (action.type) {
     case SET_CHART_DATA:

@@ -1,3 +1,4 @@
+// Originally from https://github.com/rackt/redux/tree/master/examples/todomvc
 var webpack = require('webpack');
 var webpackDevMiddleware = require('webpack-dev-middleware');
 var webpackHotMiddleware = require('webpack-hot-middleware');
