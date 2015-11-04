@@ -41,6 +41,12 @@ npm start
 
 Note the server uses webpack's hot reloading feature, which allows you to see changes you make to javascript automatically, without having to do a full page refresh.
 
+## Build
+To build the production files:
+```
+npm run build
+```
+
 # Author
 Peter Beshai [@pbesh](http://twitter.com/pbesh)
 

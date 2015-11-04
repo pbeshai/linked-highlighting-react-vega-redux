@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "Linked Highlighting with React, Redux, Vega, and Webpack",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "webpack --config=webpack.build.config.js"
   },
   "dependencies": {
     "classnames": "^2.1.2",
