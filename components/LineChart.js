@@ -12,7 +12,7 @@ class LineChart extends Component {
     // use PureRenderMixin to limit updates when they are not necessary
     this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
 
-    this._handleMouseMove = this._handleMouseMove.bind(this);
+    this._handleHover = this._handleHover.bind(this);
   }
 
   // On initial load, generate the initial vis and attach signal listeners
@@ -23,7 +23,7 @@ class LineChart extends Component {
     // parse the vega spec and create the vis
     vg.parse.spec(spec, chart => {
       const vis = chart({ el: this.refs.chartContainer })
-        .onSignal('mouse', (_, mouse) => this._handleMouseMove(mouse));
+        .onSignal('hover', this._handleHover);
 
       // set the initial data
       vis.data('points').insert(data);
@@ -68,41 +68,21 @@ class LineChart extends Component {
   }
 
   /**
-   * handler called on mouse signal change
-   * x = domain x
-   * y = domain y
+   * handler called when the hover signal changes
    */
-  _handleMouseMove({ x, y }) {
-    const { onHighlight, data } = this.props;
+  _handleHover(signalName, d) {
+    const { onHighlight } = this.props;
 
     // we only care if onHighlight exists
     if (!onHighlight) {
       return;
     }
 
-    // if no x or no y, remove the highlight, otherwise highlight the closest point
-    if (x == null || y == null) {
-      onHighlight(null);
+    if (d) {
+      onHighlight(d.datum);
     } else {
-      const nearestPoint = this._findClosest(data, x);
-      onHighlight(nearestPoint);
+      onHighlight(null);
     }
-  }
-
-  // simple way to find the closest element by x coordinate
-  _findClosest(data, x) {
-    let closest = null;
-    let closestDist = null;
-
-    for (let elem of data) {
-      const dist = Math.abs(elem.distance - x);
-      if (closestDist == null || dist < closestDist) {
-        closestDist = dist;
-        closest = elem;
-      }
-    }
-
-    return closest;
   }
 
   // the vega spec for the chart
@@ -113,49 +93,25 @@ class LineChart extends Component {
       'padding': { 'top': 10, 'left': 50, 'bottom': 50, right: 10 },
       'signals': [
         {
-          'name': 'mouseX',
-          'init': null,
+          'name': 'hover', 'init': null,
           'streams': [
-            {
-              'type': 'mousemove',
-              'expr': 'clamp(eventX(), 0, eventGroup("root").width)',
-              'scale': {'name': 'x', 'invert': true }
-            }, {
-              'type': 'mouseout',
-              'expr': 'null'
-            }
+            { 'type': '@cell:mouseover', 'expr': 'datum' },
+            { 'type': '@cell:mouseout', 'expr': 'null' }
           ]
-        }, {
-          'name': 'mouseY',
-          'init': null,
-          'streams': [
-            {
-              'type': 'mousemove',
-              'expr': 'clamp(eventY(), 0, eventGroup("root").width)',
-              'scale': {'name': 'y', 'invert': true }
-            }, {
-              'type': 'mouseout',
-              'expr': 'null'
-            }
-          ]
-        }, {
-          'name': 'mouse',
-          'init': null,
-          'expr': '{ x: mouseX, y: mouseY }'
         }
       ],
-      'data': [{'name': 'points'}, {'name': 'highlightedPoint'}],
+      'data': [{ 'name': 'points' }, { 'name': 'highlightedPoint' }],
       'scales': [
         {
           'name': 'x',
           'type': 'linear',
-          'domain': {'data': 'points', 'field': 'distance'},
+          'domain': { 'data': 'points', 'field': 'distance' },
           'range': 'width'
         },
         {
           'name': 'y',
           'type': 'linear',
-          'domain': {'data': 'points', 'field': 'value'},
+          'domain': { 'data': 'points', 'field': 'value' },
           'range': 'height',
           'nice': true
         }
@@ -181,27 +137,46 @@ class LineChart extends Component {
       'marks': [
         {
           'type': 'line',
-          'from': {'data': 'points'},
+          'from': { 'data': 'points' },
+          'interactive': false, // <-- to prevent interaction with the mouse, so the voronoi cells get it all
           'properties': {
             'enter': {
-              'x': {'scale': 'x', 'field': 'distance'},
-              'y': {'scale': 'y', 'field': 'value'},
-              'stroke': {'value': '#5357a1'},
-              'strokeWidth': {'value': 2}
+              'x': { 'scale': 'x', 'field': 'distance' },
+              'y': { 'scale': 'y', 'field': 'value' },
+              'stroke': { 'value': '#5357a1' },
+              'strokeWidth': { 'value': 2 }
+            }
+          }
+        },
+        {
+          'type': 'path',
+          'name': 'cell',
+          'from': {
+            'mark': 'points',
+            'transform': [
+              { 'type': 'voronoi', 'x': 'x', 'y': 'y' }
+            ]
+          },
+          'properties': {
+            'update': {
+              'path': { 'field': 'layout_path' },
+              'stroke': { 'value': null},
+              'fill': { 'value': 'rgba(0,0,0,0)' }
             }
           }
         },
         {
           'type': 'symbol',
-          'from': {'data': 'highlightedPoint'},
+          'from': { 'data': 'highlightedPoint' },
+          'interactive': false, // <-- to prevent interaction with the mouse to prevent flickering
           'properties': {
             'enter': {
-              'x': {'scale': 'x', 'field': 'distance'},
-              'y': {'scale': 'y', 'field': 'value'},
-              'fill': {'value': '#fa7f9f'},
-              'stroke': {'value': '#891836'},
-              'strokeWidth': {'value': 1},
-              'size': {'value': 64}
+              'x': { 'scale': 'x', 'field': 'distance' },
+              'y': { 'scale': 'y', 'field': 'value' },
+              'fill': { 'value': '#fa7f9f' },
+              'stroke': { 'value': '#891836' },
+              'strokeWidth': { 'value': 1 },
+              'size': { 'value': 64 }
             }
           }
         }
